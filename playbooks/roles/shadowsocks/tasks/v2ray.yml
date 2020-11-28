@@ -30,4 +30,4 @@
 #     GOPATH: "{{ go_path }}"
 
 - name: Copying v2ray-plugin to shadowsocks-libev directory
-  shell: "cp -rf ~/v2ray-plugin {{ shadowsocks_location }}"
+  shell: "cp -rf /v2ray-plugin {{ shadowsocks_location }}"
