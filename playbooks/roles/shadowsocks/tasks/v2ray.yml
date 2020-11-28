@@ -16,16 +16,18 @@
 # for more info. We clone the v2ray-core repository to avoid
 # the "go get" command failing with an "insecure redirect" error.
 - file:
-    path: "{{ go_path }}/tmp"
+    path: "{{ go_path }}/v2ray-plugin"
     state: directory
 
 - name: "[Temporary] Clone v2ray-core repository manually to GOPATH"
   git:
     repo: "{{ v2ray_core_github }}"
-    dest: "{{ go_path }}/src"
+    dest: "{{ go_path }}/v2ray-plugin"
 
-- name: build v2ray-plugin
-  shell: "go build -o {{ go_path }}/src/v2ray-plugin"
+- name: Build V2Ray-plugin
+  shell: "go build {{ go_path }}/v2ray-plugin"
+  environment:
+    GOPATH: "{{ go_path }}"
 
 - name: Copying v2ray-plugin to shadowsocks-libev directory
-  shell: "cp -rf {{ go_path }}/src/v2ray-plugin/v2ray-plugin {{ shadowsocks_location }}"
+  shell: "cp -rf {{ go_path }}/v2ray-plugin/v2ray-plugin {{ shadowsocks_location }}"
