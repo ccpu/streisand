@@ -9,7 +9,7 @@
 
 - name: Install golang-go
   apt:
-    package: "golang-go=1.12"
+    package: "golang-1.12"
 
 # Temporary workaround for insecure v2ray.com redirection
 # see https://github.com/StreisandEffect/streisand/issues/1642
