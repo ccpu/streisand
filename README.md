@@ -71,7 +71,7 @@ After reboot should not be able to login with password but only ssh key.
 
     sudo reboot
 
-Verify that the shadowsocks server is running and clean up
+Verify that the shadowsocks server is running
 
     systemctl status shadowsocks-libev.service
 
