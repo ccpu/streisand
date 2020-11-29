@@ -1,100 +1,118 @@
-# Streisand
+# For my own use.
 
-<p align="center">
-<img src="https://raw.githubusercontent.com/jlund/streisand/master/logo.jpg" alt="Automate the effect"/> 
-</p>
+# Required:
 
-- - -
-[English](README.md), [Français](README-fr.md), [简体中文](README-chs.md), [Русский](README-ru.md) | [Mirror](https://gitlab.com/alimakki/streisand)
-- - -
+- both builder machine and server must have ubuntu 16
 
-[![Build Status](https://github.com/StreisandEffect/streisand/workflows/Streisand/badge.svg)](https://github.com/StreisandEffect/streisand/actions)
-[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/espadrine.svg?style=social&label=Follow%20%40StreisandVPN)](https://twitter.com/StreisandVPN)
+# Insturacion:
 
-Streisand
-=========
+## Docker:
 
-**Silence censorship. Automate the [effect](https://en.wikipedia.org/wiki/Streisand_effect).**
+    Dockerfile File:
+    	FROM ubuntu:16.04
+    	RUN apt update && apt install  openssh-server curl -y
 
-The Internet can be a little unfair. It's way too easy for ISPs, telecoms, politicians, and corporations to block access to the sites and information that you care about. But breaking through these restrictions is *tough*. Or is it?
+    docker run --rm -v LOCAL_SHARED_PATH:/data -it imageName /bin/bash
 
-If you have an account with a cloud computing provider, Streisand can set up a new node with many censorship-resistant VPN services nearly automatically. You'll need a little experience with a Unix command-line. (But without Streisand, it could take days for a skilled Unix administrator to configure these services securely!) At the end, you'll have a private website with software and instructions.
+## VPN Builder machine
 
-Here's what **[a sample Streisand server](http://streisandeffect-demo.s3-website.us-east-2.amazonaws.com/)** looks like.
+Enable opnevpn and make sure docker using vpn (skip if trust network):
 
+    curl ifconfig.me.
 
-There's a [list of supported cloud providers](#cloud-providers); experts may be able to use Streisand to install on many other cloud providers.
+## For existing server setup(advance):
 
-## VPN services
+use builder machine to generate ssh private key and add it to target server:
 
-One type of tool that people use to avoid network censorship is a Virtual Private Network (VPN). There are many kinds of VPNs.
+## Builder machine:
 
-Not all network censorship is alike; in some places, it changes from day to day. Streisand provides many different VPN services to try. (You don't have to install them all, though.)
+    ls ~/.ssh
+    ssh-keygen
+    cp -r ~/.ssh data
 
-Some Streisand services include add-ons for further censorship and throttling resistance:
+## Target/Remote machine
 
-* [OpenSSH](https://www.openssh.com/)
-    * [Tinyproxy](https://banu.com/tinyproxy/) may be used as an HTTP proxy.
-* [OpenConnect](https://ocserv.gitlab.io/www/index.html) / [Cisco AnyConnect](https://www.cisco.com/c/en/us/products/security/anyconnect-secure-mobility-client/index.html)
-    * This protocol is widely used by multi-national corporations, and might not be blocked.
-* [OpenVPN](https://openvpn.net/index.php/open-source.html)
-    * [Stunnel](https://www.stunnel.org/index.html) add-on available.
-* [Shadowsocks](https://shadowsocks.org/en/index.html), 
-    * The [V2ray-plugin](https://github.com/shadowsocks/v2ray-plugin) is installed to provide robust traffic evasion on hostile networks (especially those implementing quality of service (QOS) throttling).
-* A private [Tor](https://www.torproject.org/) bridge relay
-    * [Obfsproxy](https://www.torproject.org/projects/obfsproxy.html.en) with obfs4 available as an add-on.
-* [WireGuard](https://www.wireguard.com/), a modern high-performance protocol.
+copy id_rsa.pub content of data/.ssh (important: remove next lines):
 
-See also:
-* A [more technical list of features](Features.md) 
-* A [more technical list of services](Services.md)
+    sudo nano ~/.ssh/authorized_keys
+    sudo systemctl restart sshd
 
-<a id="cloud-providers"></a>
-## Cloud providers
-* Amazon Web Services (AWS)
-* Microsoft Azure
-* Digital Ocean
-* Google Compute Engine (GCE)
-* Linode
-* Rackspace
+test if working in builder machine:
 
+    ssh user@IP_ADDRESSorHOSTNAME
 
-#### Other providers
-We recommend using one of the above providers. If you are an expert and can set up a *fresh Ubuntu 16.04 server* elsewhere, there are "localhost" and "existing remote server" installation methods. For more information, see [the advanced installation instructions](Advanced%20installation.md).
+### v2ray Installation
 
-## Installation
+    sudo add-apt-repository ppa:longsleep/golang-backports
+    sudo apt-get update && sudo apt-get upgrade -y
+    sudo apt-get install golang-go -y && cd /
+    sudo git clone https://github.com/shadowsocks/v2ray-plugin && cd v2ray-plugin && sudo go build
 
-You need command-line access to a Unix system. You can use Linux, BSD, or macOS; on Windows 10, the Windows Subsystem for Linux (WSL) counts as Linux. 
+## Builder machine:
 
-Once you're ready, see the [full installation instructions](Installation.md).
+    git clone https://github.com/ccpu/streisand.git && cd streisand
+    ./util/venv-dependencies.sh ./venv
+    source ./venv/bin/activate
+    ./streisand
 
+> If complained about user, use `ANSIBLE_SSH_USER=ubuntu ./streisand` command
 
-## Things we want to do better
+download generated-docs
 
-Aside from a good deal of cleanup, we could really use:
+    cp -r streisand/generated-docs/ data
 
-* Easier setup.
-* Faster adoption of new censorship-avoidance tools
+## Test and cleanup Target/Remote machine
 
-We're looking for help with both.
+remove v2ray-plugin plugin folder
 
-If there is something that you think Streisand should do, or if you find a bug in its documentation or execution, please file a report on the [Issue Tracker](https://github.com/StreisandEffect/streisand/issues).
+    cd / && sudo rm -r v2ray-plugin
 
-Core Contributors
-----------------
-* Jay Carlson (@nopdotcom)
-* Nick Clarke (@nickolasclarke)
-* Joshua Lund (@jlund)
-* Ali Makki (@alimakki)
-* Daniel McCarney (@cpu)
-* Corban Raun (@CorbanR)
+After reboot should not be able to login with password but only ssh key.
 
-Acknowledgements
-----------------
-[Jason A. Donenfeld](https://www.zx2c4.com/) deserves a lot of credit for being brave enough to reimagine what a modern VPN should look like and for coming up with something as good as [WireGuard](https://www.wireguard.com/). He has our sincere thanks for all of his patient help and high-quality feedback.
+    sudo reboot
 
-We are grateful to [Trevor Smith](https://github.com/trevorsmith) for his massive contributions. He suggested the Gateway approach, provided tons of invaluable feedback, made *everything* look better, and developed the HTML template that served as the inspiration to take things to the next level before Streisand's public release.
+Verify that the shadowsocks server is running and clean up
 
-Huge thanks to [Paul Wouters](https://nohats.ca/) of [The Libreswan Project](https://libreswan.org/) for his generous help troubleshooting the L2TP/IPsec setup.
+    systemctl status shadowsocks-libev.service
 
-[Starcadian's](https://www.starcadian.com/) 'Sunset Blood' album was played on repeat approximately 300 times during the first few months of work on the project in early 2014.
+# Troubleshooting
+
+### V2RAY-PLUGIN
+
+If installation complain about not able to copy v2ray copy v2ray-plugin manually as follow:
+
+comment out line 31/32 of playbooks/roles/shadowsocks/tasks/v2ray.yml
+and run setup again and copy v2ray-plugin manually (cp -rf /v2ray-plugin/v2ray-plugin /etc/shadowsocks-libev)
+
+### OPENVPN
+
+IF need update openvpn signed key and api key form:
+get api key and sign key from:
+https://community.openvpn.net/openvpn/wiki/OpenvpnSoftwareRepos
+
+Files:
+playbooks/roles/openvpn/files/openvpn_signing.key
+playbooks/roles/openvpn/tasks/install.yml
+playbooks/roles/test-client/files/openvpn_signing.key
+
+# refs:
+
+https://github.com/StreisandEffect/streisand/blob/master/Installation.md
+
+https://support.us.ovhcloud.com/hc/en-us/articles/115001588250-How-to-Use-SSH-Keys
+
+https://www.linuxbabe.com/ubuntu/shadowsocks-libev-proxy-server-ubuntu
+
+# Issue
+
+## FAILED - RETRYING: Refresh the Streisand GPG keyring with keyserver information (10 retries left).
+
+https://github.com/StreisandEffect/streisand/issues/1822
+https://community.openvpn.net/openvpn/wiki/OpenvpnSoftwareRepos
+https://github.com/StreisandEffect/streisand/pull/1796
+
+## v2ray-plugin
+
+https://github.com/StreisandEffect/streisand/issues/1819
+
+sudo nano /etc/shadowsocks-libev/config.json
