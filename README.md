@@ -46,7 +46,7 @@ test if working in builder machine:
     sudo add-apt-repository ppa:longsleep/golang-backports
     sudo apt-get update && sudo apt-get upgrade -y
     sudo apt-get install golang-go -y && cd /
-    sudo git clone https://github.com/shadowsocks/v2ray-plugin && cd v2ray-plugin && sudo go build
+    git clone https://github.com/shadowsocks/v2ray-plugin && cd v2ray-plugin && sudo go build
 
 ## Builder machine:
 
