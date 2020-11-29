@@ -7,8 +7,9 @@
   no_log: True
 
 - name: Add the official OpenVPN repository
+  shell: "echo https://build.openvpn.net/debian/openvpn/stable {{ ansible_lsb.codename }} main"
   apt_repository:
-    repo: 'deb https://build.openvpn.net/debian/openvpn/stable {{ ansible_lsb.codename }} main'
+    repo: "deb https://build.openvpn.net/debian/openvpn/stable {{ ansible_lsb.codename }} main"
     state: present
   register: openvpn_add_apt_repository
   until: not openvpn_add_apt_repository.failed
